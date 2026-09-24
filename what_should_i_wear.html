@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What Should I Wear?</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f5f7fb;color:#172033;font-family:Arial,Helvetica,sans-serif}
+main{max-width:900px;margin:0 auto;padding:24px}
+h1{text-align:center;font-size:38px;margin:0 0 8px}
+.subtitle{text-align:center;font-size:20px;margin:0 0 24px;color:#566174}
+.card{background:white;border:2px solid #d9dee7;border-radius:20px;padding:22px;margin-bottom:18px}
+h2{font-size:25px;margin:0 0 15px}
+.weather{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+button{font:inherit}
+.weather button{min-height:105px;border:2px solid #cfd5df;background:white;border-radius:16px;cursor:pointer}
+.weather button.selected{border:4px solid #315efb;background:#eaf0ff}
+.icon{display:block;font-size:42px}
+.name{font-size:18px;font-weight:700}
+.temp-row{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:18px}
+input{font-size:30px;font-weight:700;width:130px;padding:10px;border:2px solid #cfd5df;border-radius:12px;text-align:center}
+.deg{font-size:30px;font-weight:700}
+.result{text-align:center;border-radius:18px;background:#f1f5f9;padding:25px}
+.result .big{font-size:62px}
+.result h3{font-size:30px;margin:8px 0 18px}
+.clothes{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.clothes span{background:white;border:2px solid #d9dee7;border-radius:12px;padding:12px 16px;font-size:19px;font-weight:700}
+.checklist{margin-top:20px}
+.check{display:flex;align-items:center;gap:10px;justify-content:center;margin:8px}
+.check input{width:26px;height:26px}
+.reset{display:block;margin:20px auto 0;border:0;background:#315efb;color:white;padding:13px 24px;border-radius:12px;font-weight:700;cursor:pointer}
+.note{text-align:center;color:#566174;font-size:15px;margin-top:12px}
+@media(max-width:600px){main{padding:12px}h1{font-size:30px}.weather{grid-template-columns:repeat(2,1fr)}.card{padding:16px}}
+</style>
+</head>
+<body>
+<main>
+<h1>👕 What Should I Wear?</h1>
+<p class="subtitle">Check the weather. Check the temperature. Pick your clothes.</p>
+
+<section class="card">
+<h2>1. What is the weather?</h2>
+<div class="weather" id="weatherButtons">
+<button data-weather="sunny" class="selected"><span class="icon">☀️</span><span class="name">Sunny</span></button>
+<button data-weather="cloudy"><span class="icon">☁️</span><span class="name">Cloudy</span></button>
+<button data-weather="rain"><span class="icon">🌧️</span><span class="name">Rain</span></button>
+<button data-weather="snow"><span class="icon">❄️</span><span class="name">Snow</span></button>
+<button data-weather="wind"><span class="icon">💨</span><span class="name">Windy</span></button>
+<button data-weather="storm"><span class="icon">⛈️</span><span class="name">Storm</span></button>
+</div>
+</section>
+
+<section class="card">
+<h2>2. What is the temperature?</h2>
+<div class="temp-row">
+<input id="temp" type="number" min="-20" max="120" value="65" aria-label="Temperature">
+<span class="deg">°F</span>
+</div>
+<p class="note">Enter the number you see outside.</p>
+</section>
+
+<section class="card">
+<h2>3. What should I wear?</h2>
+<div class="result" id="result"></div>
+</section>
+
+<button class="reset" id="reset">Start Over</button>
+</main>
+
+<script>
+const buttons=[...document.querySelectorAll('[data-weather]')];
+const temp=document.getElementById('temp');
+const result=document.getElementById('result');
+let weather='sunny';
+
+const icons={sunny:'☀️',cloudy:'☁️',rain:'🌧️',snow:'❄️',wind:'💨',storm:'⛈️'};
+
+function update(){
+  let t=Number(temp.value);
+  if(!Number.isFinite(t)) t=65;
+  let title,clothes;
+  if(t>=80){title='Light clothes';clothes=['👕 T-shirt','🩳 Shorts'];}
+  else if(t>=65){title='T-shirt weather';clothes=['👕 T-shirt','👖 Pants or shorts'];}
+  else if(t>=50){title='Jacket weather';clothes=['👕 Long-sleeve shirt','👖 Pants','🧥 Light jacket'];}
+  else if(t>=35){title='Cold weather';clothes=['👕 Long-sleeve shirt','👖 Pants','🧥 Jacket'];}
+  else{title='Winter weather';clothes=['👕 Warm shirt','👖 Warm pants','🧥 Coat','🧢 Hat','🧤 Gloves'];}
+
+  if(weather==='rain'||weather==='storm') clothes.push('☔ Rain jacket');
+  if(weather==='snow') clothes.push('❄️ Snow gear');
+  if(weather==='wind' && t<65) clothes.push('🧥 Windbreaker');
+
+  result.innerHTML='<div class="big">'+icons[weather]+'</div>'+
+    '<h3>'+title+'</h3>'+
+    '<div class="clothes">'+clothes.map(c=>'<span>'+c+'</span>').join('')+'</div>'+
+    '<div class="checklist">'+clothes.map((c,i)=>'<label class="check"><input type="checkbox" id="c'+i+'"> I have '+c.replace(/^[^ ]+ /,'')+'</label>').join('')+'</div>';
+}
+
+buttons.forEach(b=>b.addEventListener('click',()=>{
+  buttons.forEach(x=>x.classList.remove('selected'));
+  b.classList.add('selected');
+  weather=b.dataset.weather;
+  update();
+}));
+temp.addEventListener('input',update);
+document.getElementById('reset').addEventListener('click',()=>{
+  weather='sunny';temp.value=65;
+  buttons.forEach(x=>x.classList.toggle('selected',x.dataset.weather==='sunny'));
+  update();
+});
+update();
+</script>
+</body>
+</html>
